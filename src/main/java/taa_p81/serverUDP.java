@@ -1,6 +1,8 @@
 package taa_p81;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 /**
  * UDP Server
  * @author FRAND
@@ -9,9 +11,6 @@ import java.net.*;
 import java.util.ArrayList;
 
 public class serverUDP {
-    //Array de sensores
-
-    
     //HANDLERS
     public static float ConsultarTemperatura(ArrayList sensores , String ciudad){
         Sensor sensorActual;
@@ -55,36 +54,46 @@ public class serverUDP {
                 //Parseamos el String y obtenemos el numero de operacion
                 int nroOp;
                 JSONParser parser = new JSONParser();
-                JSONObject objeto=(JSONObject) parser.parse(request.getData().toString());
+                String datosString = new String(request.getData());
+                datosString=datosString.trim();
+                
+                Object obj = parser.parse(datosString.trim());
+                JSONObject objeto=(JSONObject) obj;
                 JSONObject datos;
                 
-                nroOp=Integer.parseInt(objeto.get("operacion").toString());
+                nroOp= Integer.parseInt(objeto.get("operacion").toString());
+                System.out.println(nroOp);
+                datos=(JSONObject) objeto.get("datos");
                 
-                datos=(JSONObject) parser.parse(objeto.get("datos").toString());
-           
                 
                 //Handler
                 if (nroOp == 1 ){ //Recibir los datos de los sensores y agregar al arraylist
-                    System.out.println("opcion 1");
+                    //System.out.println("opcion 1");
                     Sensor sensornuevo = new Sensor(datos);
                     sensores.add(sensornuevo);
                     DatagramPacket reply = new DatagramPacket(mensaje.getBytes(),mensaje.getBytes().length,request.getAddress(),request.getPort());
                     aSocket.send(reply);
+                    System.out.println("Se creo un nuevo sensor");
+                    System.out.println(sensores.get(0).ciudad);
                 }else if( nroOp == 2){
                     System.out.println("opcion 2");
-                    String ciudad = (String) datos.get("ciudad");
+                    datos=(JSONObject)parser.parse(datos.toString());
+                    String ciudad = new String(datos.get("ciudad").toString());
                     Float temperatura = ConsultarTemperatura(sensores,ciudad);
                     DatagramPacket reply = new DatagramPacket(temperatura.toString().getBytes(),temperatura.toString().getBytes().length,request.getAddress(),request.getPort());
                     aSocket.send(reply);
                 }else if( nroOp == 3){
                     System.out.println("opcion 3");
-                    Float temperaturaPromedio = ConsultarTemperaturaProm(sensores);
+                    /*Float temperaturaPromedio = ConsultarTemperaturaProm(sensores);
                     DatagramPacket reply = new DatagramPacket(temperaturaPromedio.toString().getBytes(),temperaturaPromedio.toString().getBytes().length,request.getAddress(),request.getPort());
-                    aSocket.send(reply);
+                    aSocket.send(reply);*/
                 }
             }
+        }catch(ParseException ex){
+            System.out.println("Error en el parse : "+ex.getMessage());
+            System.out.println("Trace :");
         }catch(Exception e){
-            System.out.println(e.getMessage());
+            System.out.println("Error :"+e.getMessage());
         } 
     }
 }
