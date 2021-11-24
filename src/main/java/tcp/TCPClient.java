@@ -20,7 +20,7 @@ public class TCPClient {
         Scanner sc =new Scanner(System.in);
         mensaje=sc.next();
         try{
-            int serverPort = 6969;
+            int serverPort = 7896;
             s = new Socket("26.54.243.204",serverPort);
             DataInputStream in = new DataInputStream(s.getInputStream());
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
